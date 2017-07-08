@@ -1,18 +1,39 @@
 from subprocess import Popen, PIPE
-import sys
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+import sys, time, os
 
-if len(sys.argv) <= 1 :
+if len(sys.argv) <= 1:
     print("Please supply an input file")
     quit()
 
-def callPandoc( directory ) :
-    indexOfExtension = directory.rfind(".doc")
-    outputFile = directory[:indexOfExtension] + ".md"
-    p = Popen(["pandoc", directory, "-s", "-o", outputFile], stdout=PIPE, stderr=PIPE)
+inputFile = sys.argv[1]
+directory = os.path.dirname(inputFile)
+
+def callPandoc( inputFile ):
+    indexOfExtension = inputFile.rfind(".doc")
+    outputFile = inputFile[:indexOfExtension] + ".md"
+    p = Popen(["pandoc", inputFile, "-s", "-o", outputFile], stdout=PIPE, stderr=PIPE)
     out, err = p.communicate()
     if err != b'' :
         print(err)
     else :
-        print("Converted " + directory + " to " + outputFile)
+        print("Converted " + inputFile + " to " + outputFile)
 
-callPandoc(sys.argv[1])
+class Handler(FileSystemEventHandler):
+    def on_modified(self, event):
+        if event.src_path == inputFile:
+            callPandoc(inputFile)
+
+eventHandler = Handler()
+observer = Observer()
+observer.schedule(eventHandler, path=directory, recursive=False)
+observer.start()
+
+try:
+    while True:
+        time.sleep(1)
+except KeyboardInterrupt:
+    observer.stop()
+    print()
+observer.join()
