@@ -13,7 +13,7 @@ directory = os.path.dirname(inputFile)
 def callPandoc( inputFile ):
     indexOfExtension = inputFile.rfind(".doc")
     outputFile = inputFile[:indexOfExtension] + ".md"
-    p = Popen(["pandoc", inputFile, "-s", "-o", outputFile], stdout=PIPE, stderr=PIPE)
+    p = Popen(["pandoc", inputFile, "-s", "-o", outputFile, "--wrap=preserve"], stdout=PIPE, stderr=PIPE)
     out, err = p.communicate()
     if err != b'' :
         print(err)
