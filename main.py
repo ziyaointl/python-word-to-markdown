@@ -22,7 +22,7 @@ def callPandoc( inputFile ):
 
 class Handler(FileSystemEventHandler):
     def on_modified(self, event):
-        if event.src_path == inputFile:
+        if event.src_path == directory:
             callPandoc(inputFile)
 
 eventHandler = Handler()
